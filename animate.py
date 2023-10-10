@@ -10,15 +10,14 @@ import pandas as pd
 
 
 
-def animate_quadcopter_history(times, x, R):
+def animate_quadcopter_history(times, x, R,arm_length=0.3,tilt_angle=0.0):
     plt.style.use('seaborn')
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
     space_lim = (0, 2)
-    arm_length = 0.3  # in meters
-    uav_plot = Uav(ax, arm_length,tilt_angle=np.deg2rad(30)) # TODO: change hardcode
+    uav_plot = Uav(ax, arm_length,tilt_angle=tilt_angle) # TODO: change hardcode
     def update_plot(i):
         
         # ax.cla()
@@ -47,21 +46,20 @@ def animate_quadcopter_history(times, x, R):
     ani = animation.FuncAnimation(fig, update_plot,frames=ind,interval=animate_interval);
     plt.show()
 
-# Load your data 
-data = pd.read_csv('quadcopter_data.csv')
-times = data['Time'].values
+# # Create some fake simulation data
+# steps = 500
+# t_end = 1
+# times = np.linspace(0, t_end, steps)
+# x = np.zeros((3, steps))
+# x[0, :] = np.arange(0, t_end, t_end / steps)
+# x[1, :] = np.arange(0, t_end, t_end / steps) * 2
 
-posHistory = data[['PosX', 'PosY', 'PosZ']].values
-attHistory = data[['Yaw','Pitch', 'Roll']].values
-x = posHistory.T
-steps = len(times)
-
-R = np.zeros((3, 3, steps))
-for i in range(steps):
-    ypr = attHistory[i,:]
-    R[:, :, i] = ypr_to_R(ypr, degrees=False)
+# R = np.zeros((3, 3, steps))
+# for i in range(steps):
+#     ypr = np.array([0, 0.5*i, 0.0])
+#     R[:, :, i] = ypr_to_R(ypr, degrees=True)
 
 
-# TODO: change constants
+# # TODO: change constants
 
-animate_quadcopter_history(times, x, R)
+# animate_quadcopter_history(times, x, R)

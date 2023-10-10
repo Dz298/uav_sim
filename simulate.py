@@ -12,7 +12,8 @@ from mixer import QuadcopterMixer
 
 from adap_drone_lowlevelctrl.utils import QuadState,Model
 from adap_drone_lowlevelctrl.controller import AdapLowLevelControl
-
+from pyplot3d.utils import ypr_to_R
+from animate import animate_quadcopter_history
 import pandas as pd
 
 np.random.seed(0)
@@ -26,15 +27,15 @@ endTime = 5
 #==============================================================================
 # Define the vehicle
 #==============================================================================
-mass = 0.8  # kg
-Ixx = 4.7e-3
-Iyy = 4.7e-3
-Izz = 7.4e-3
+mass = 0.985  # kg
+Ixx = 4e-3
+Iyy = 8e-3
+Izz = 12e-3
 Ixy = 0
 Ixz = 0
 Iyz = 0
 omegaSqrToDragTorque = np.matrix(np.diag([0, 0, 0.00014]))  # N.m/(rad/s)**2
-armLength = 0.17  # m
+armLength = 0.177  # m
 
 ##MOTORS##
 motSpeedSqrToThrust = 7.6e-6  # propeller coefficient
@@ -44,6 +45,7 @@ motInertia   = 15e-6  #inertia of all rotating parts (motor + prop) [kg.m**2]
 motTimeConst = 0.015  # time constant with which motor's speed responds [s]
 motMinSpeed  = 0  #[rad/s]
 motMaxSpeed  = 950  #[rad/s]
+TILT_ANGLE = np.deg2rad(15)
 
 #==============================================================================
 # Define the disturbance
@@ -54,12 +56,12 @@ stdDevTorqueDisturbance = 0e-3  # [N.m]
 # Define the attitude controller
 #==============================================================================
 #time constants for the angle components:
-timeConstAngleRP = 0.1  # [s]
+timeConstAngleRP = 0.15  # [s]
 timeConstAngleY  = 0.5  # [s]
 
 #gain from angular velocities
 timeConstRatesRP = 0.05  # [s]
-timeConstRatesY  = 0.5   # [s]
+timeConstRatesY  = 0.25   # [s]
 
 #==============================================================================
 # Define the position controller
@@ -99,7 +101,6 @@ quadrocopter = Vehicle(mass, inertiaMatrix, omegaSqrToDragTorque, stdDevTorqueDi
 #   (+)mot2 | mot1(-)
 
 
-TILT_ANGLE = np.deg2rad(30)
 motor_pos = armLength*(2**0.5)
 
 quadrocopter.add_motor(Vec3( motor_pos, -motor_pos, 0), Vec3(0,0,1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia, tilt_angle=TILT_ANGLE)
@@ -240,3 +241,21 @@ data = pd.DataFrame(data_dict)
 data.to_csv('quadcopter_data.csv', index=False)
 
 
+# Load your data 
+data = pd.read_csv('quadcopter_data.csv')
+times = data['Time'].values
+
+posHistory = data[['PosX', 'PosY', 'PosZ']].values
+attHistory = data[['Yaw','Pitch', 'Roll']].values
+x = posHistory.T
+steps = len(times)
+
+R = np.zeros((3, 3, steps))
+for i in range(steps):
+    ypr = attHistory[i,:]
+    R[:, :, i] = ypr_to_R(ypr, degrees=False)
+
+
+# TODO: change constants
+
+animate_quadcopter_history(times, x, R, arm_length=0.4, tilt_angle=TILT_ANGLE)
