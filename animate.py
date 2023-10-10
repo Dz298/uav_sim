@@ -44,6 +44,11 @@ def animate_quadcopter_history(times, x, R,arm_length=0.3,tilt_angle=0.0):
     steps = len(times)
     ind = [i * step_size for i in range(steps // step_size)]
     ani = animation.FuncAnimation(fig, update_plot,frames=ind,interval=animate_interval);
+    # Define the filename for the GIF
+    output_gif_filename = "quad_sim_animation.gif"
+    # Save the animation as a GIF
+    ani.save(output_gif_filename, writer='pillow')
+    # Display the animation
     plt.show()
 
 # # Create some fake simulation data
