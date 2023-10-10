@@ -16,8 +16,9 @@ def animate_quadcopter_history(times, x, R):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
-    arm_length = 0.25  # in meters
-    uav_plot = Uav(ax, arm_length)
+    space_lim = (0, 2)
+    arm_length = 0.3  # in meters
+    uav_plot = Uav(ax, arm_length,tilt_angle=np.deg2rad(30)) # TODO: change hardcode
     def update_plot(i):
         
         # ax.cla()
@@ -27,16 +28,15 @@ def animate_quadcopter_history(times, x, R):
         # These limits must be set manually since we use
         # a different axis frame configuration than the
         # one matplotlib uses.
-        xmin, xmax = -1, 1
-        ymin, ymax = -1, 1
-        zmin, zmax = 0, 2
-        ax.set_xlim([xmin, xmax])
-        ax.set_ylim([ymax, ymin])
-        ax.set_zlim([zmax, zmin])
+        
+        ax.set_xlim(space_lim)
+        ax.set_ylim(space_lim)
+        ax.set_zlim((0, space_lim[1]))
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
-        ax.invert_zaxis()
+        ax.set_box_aspect([1, 1, 1])
+        # ax.invert_zaxis()
         ax.set_title("Quadcopter Animation (Time: {0:.3f} s)".format(times[i]))
     
     # animate @ 1/desired_interval hz, with data from every step_size * dt
@@ -52,18 +52,16 @@ data = pd.read_csv('quadcopter_data.csv')
 times = data['Time'].values
 
 posHistory = data[['PosX', 'PosY', 'PosZ']].values
-attHistory = data[['Roll', 'Pitch', 'Yaw']].values
+attHistory = data[['Yaw','Pitch', 'Roll']].values
 x = posHistory.T
 steps = len(times)
 
 R = np.zeros((3, 3, steps))
 for i in range(steps):
     ypr = attHistory[i,:]
-    R[:, :, i] = ypr_to_R(ypr, degrees=True)
+    R[:, :, i] = ypr_to_R(ypr, degrees=False)
 
 
-# TODO: add animation for thrust/motor direction
-# TODO: add dynamics model for thrust/motor direction
 # TODO: change constants
 
 animate_quadcopter_history(times, x, R)

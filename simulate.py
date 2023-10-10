@@ -98,12 +98,14 @@ quadrocopter = Vehicle(mass, inertiaMatrix, omegaSqrToDragTorque, stdDevTorqueDi
 #           |
 #   (+)mot2 | mot1(-)
 
+
+TILT_ANGLE = np.deg2rad(30)
 motor_pos = armLength*(2**0.5)
 
-quadrocopter.add_motor(Vec3( motor_pos, -motor_pos, 0), Vec3(0,0,1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia)
-quadrocopter.add_motor(Vec3( -motor_pos, -motor_pos, 0), Vec3(0,0,-1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia)
-quadrocopter.add_motor(Vec3(-motor_pos, +motor_pos, 0), Vec3(0,0,1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia)
-quadrocopter.add_motor(Vec3( motor_pos,motor_pos, 0), Vec3(0,0, -1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia)
+quadrocopter.add_motor(Vec3( motor_pos, -motor_pos, 0), Vec3(0,0,1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia, tilt_angle=TILT_ANGLE)
+quadrocopter.add_motor(Vec3( -motor_pos, -motor_pos, 0), Vec3(0,0,-1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia, tilt_angle=TILT_ANGLE)
+quadrocopter.add_motor(Vec3(-motor_pos, +motor_pos, 0), Vec3(0,0,1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia, tilt_angle=TILT_ANGLE)
+quadrocopter.add_motor(Vec3( motor_pos,motor_pos, 0), Vec3(0,0, -1), motMinSpeed, motMaxSpeed, motSpeedSqrToThrust, motSpeedSqrToTorque, motTimeConst, motInertia, tilt_angle=TILT_ANGLE)
 
 posControl = PositionController(posCtrlNatFreq, posCtrlDampingRatio)
 attController = QuadcopterAttitudeControllerNested(timeConstAngleRP, timeConstAngleY, timeConstRatesRP, timeConstRatesY)
@@ -146,27 +148,27 @@ while index < numSteps:
         
         
     ########################################## Original version  ##########################################################
-    #mass-normalised thrust:
-    thrustNormDes = accDes + Vec3(0, 0, 9.81)
-    angAccDes = attController.get_angular_acceleration(thrustNormDes, quadrocopter._att, quadrocopter._omega)
-    motCmds = mixer.get_motor_force_cmd(thrustNormDes, angAccDes)
-    
-    #run the simulator
-    quadrocopter.run(dt, motCmds)
-    ########################################## RL Control ##########################################################
     # #mass-normalised thrust:
     # thrustNormDes = accDes + Vec3(0, 0, 9.81)
-    # #desired ang velocity 
-    # angVelDes = attController.get_angular_velocity(thrustNormDes, quadrocopter._att, quadrocopter._omega)
-    # cur_state.att = quadrocopter._att.to_array().flatten()
-    # cur_state.omega = quadrocopter._omega.to_array().flatten()
-    # cur_state.proper_acc = quadrocopter._accel.to_array().flatten()
-    # cur_state.cmd_collective_thrust = thrustNormDes.z 
-    # cur_state.cmd_bodyrates = angVelDes.to_array().flatten()
+    # angAccDes = attController.get_angular_acceleration(thrustNormDes, quadrocopter._att, quadrocopter._omega)
+    # motCmds = mixer.get_motor_force_cmd(thrustNormDes, angAccDes)
     
-    # motCmds = low_level_controller.run(cur_state)
-    # #run the simulator 
-    # quadrocopter.run(dt, motCmds,spdCmd=True)
+    # #run the simulator
+    # quadrocopter.run(dt, motCmds)
+    ########################################## RL Control ##########################################################
+    #mass-normalised thrust:
+    thrustNormDes = accDes + Vec3(0, 0, 9.81)
+    #desired ang velocity 
+    angVelDes = attController.get_angular_velocity(thrustNormDes, quadrocopter._att, quadrocopter._omega)
+    cur_state.att = quadrocopter._att.to_array().flatten()
+    cur_state.omega = quadrocopter._omega.to_array().flatten()
+    cur_state.proper_acc = quadrocopter._accel.to_array().flatten()
+    cur_state.cmd_collective_thrust = thrustNormDes.z 
+    cur_state.cmd_bodyrates = angVelDes.to_array().flatten()
+    
+    motCmds = low_level_controller.run(cur_state)
+    #run the simulator 
+    quadrocopter.run(dt, motCmds,spdCmd=True)
     ########################################## RL Control ##########################################################
 
     #for plotting
@@ -185,39 +187,39 @@ while index < numSteps:
 # Make the plots
 #==============================================================================
    
-# fig, ax = plt.subplots(5,1, sharex=True)
+fig, ax = plt.subplots(5,1, sharex=True)
 
-# ax[0].plot(times, posHistory[:,0], label='x')
-# ax[0].plot(times, posHistory[:,1], label='y')
-# ax[0].plot(times, posHistory[:,2], label='z')
-# ax[0].plot([0, endTime], [desPos.to_list(), desPos.to_list()],':')
-# ax[1].plot(times, velHistory)
-# ax[2].plot(times, attHistory[:,0]*180/np.pi, label='Y')
-# ax[2].plot(times, attHistory[:,1]*180/np.pi, label='P')
-# ax[2].plot(times, attHistory[:,2]*180/np.pi, label='R')
-# ax[3].plot(times, angVelHistory[:,0], label='p')
-# ax[3].plot(times, angVelHistory[:,1], label='q')
-# ax[3].plot(times, angVelHistory[:,2], label='r')
-# ax[4].plot(times, inputHistory)
-# ax[4].plot(times, inputHistory)
-# ax[4].plot(times, motForcesHistory,':')
+ax[0].plot(times, posHistory[:,0], label='x')
+ax[0].plot(times, posHistory[:,1], label='y')
+ax[0].plot(times, posHistory[:,2], label='z')
+ax[0].plot([0, endTime], [desPos.to_list(), desPos.to_list()],':')
+ax[1].plot(times, velHistory)
+ax[2].plot(times, attHistory[:,0]*180/np.pi, label='Y')
+ax[2].plot(times, attHistory[:,1]*180/np.pi, label='P')
+ax[2].plot(times, attHistory[:,2]*180/np.pi, label='R')
+ax[3].plot(times, angVelHistory[:,0], label='p')
+ax[3].plot(times, angVelHistory[:,1], label='q')
+ax[3].plot(times, angVelHistory[:,2], label='r')
+ax[4].plot(times, inputHistory)
+ax[4].plot(times, inputHistory)
+ax[4].plot(times, motForcesHistory,':')
 
-# ax[-1].set_xlabel('Time [s]')
+ax[-1].set_xlabel('Time [s]')
 
-# ax[0].set_ylabel('Pos')
-# ax[1].set_ylabel('Vel')
-# ax[2].set_ylabel('Att [deg]')
-# ax[3].set_ylabel('AngVel (in B)')
-# ax[4].set_ylabel('MotForces')
+ax[0].set_ylabel('Pos')
+ax[1].set_ylabel('Vel')
+ax[2].set_ylabel('Att [deg]')
+ax[3].set_ylabel('AngVel (in B)')
+ax[4].set_ylabel('MotForces')
 
-# ax[0].set_xlim([0, endTime])
-# ax[0].legend()
-# ax[2].legend()
-# ax[3].legend()
+ax[0].set_xlim([0, endTime])
+ax[0].legend()
+ax[2].legend()
+ax[3].legend()
 
-# print('Ang vel: ',angVelHistory[-1,:])
-# print('Motor speeds: ',quadrocopter.get_motor_speeds())
-# plt.show()
+print('Ang vel: ',angVelHistory[-1,:])
+print('Motor speeds: ',quadrocopter.get_motor_speeds())
+plt.show()
 
 data_dict = {
     'Time': times.flatten(),
@@ -227,9 +229,9 @@ data_dict = {
     'VelX': velHistory[:, 0],
     'VelY': velHistory[:, 1],
     'VelZ': velHistory[:, 2],
-    'Roll': attHistory[:, 0],
+    'Yaw': attHistory[:, 0],
     'Pitch': attHistory[:, 1],
-    'Yaw': attHistory[:, 2],
+    'Roll': attHistory[:, 2],
 }
 # Create a DataFrame from the dictionary
 data = pd.DataFrame(data_dict)

@@ -5,11 +5,18 @@ from py3dmath import Vec3  # get from https://github.com/muellerlab/py3dmath
 
 class Motor:
     def __init__(self, position, rotAxis, minSpeed, maxSpeed, speedSqrToThrust, 
-                 speedSqrToTorque, timeConst, inertia):
-        self._rotAxis = rotAxis
-        self._thrustAxis = Vec3(rotAxis)
-        if self._thrustAxis.z < 0:
-            self._thrustAxis = - self._thrustAxis
+                 speedSqrToTorque, timeConst, inertia, tilt_angle=0.0):
+        
+        self.spinDir = np.sign(rotAxis.z)
+        
+        if tilt_angle == 0.0:
+            self._rotAxis = rotAxis
+            self._thrustAxis = Vec3(rotAxis)
+            if self._thrustAxis.z < 0:
+                self._thrustAxis = - self._thrustAxis
+        else:
+            self._rotAxis = Vec3(np.sin(tilt_angle),0,np.cos(tilt_angle)) * self.spinDir
+            self._thrustAxis = Vec3(np.sin(tilt_angle),0,np.cos(tilt_angle))
             
             
         self._minSpeed = minSpeed
