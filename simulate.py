@@ -238,11 +238,11 @@ data_dict = {
 data = pd.DataFrame(data_dict)
 
 # Save the DataFrame to a CSV file
-data.to_csv('quadcopter_data.csv', index=False)
+data.to_csv('data/quadcopter_data.csv', index=False)
 
 
 # Load your data 
-data = pd.read_csv('quadcopter_data.csv')
+data = pd.read_csv('data/quadcopter_data.csv')
 times = data['Time'].values
 
 posHistory = data[['PosX', 'PosY', 'PosZ']].values
@@ -255,7 +255,5 @@ for i in range(steps):
     ypr = attHistory[i,:]
     R[:, :, i] = ypr_to_R(ypr, degrees=False)
 
-
-# TODO: change constants
 
 animate_quadcopter_history(times, x, R, arm_length=0.4, tilt_angle=TILT_ANGLE)
