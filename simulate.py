@@ -42,7 +42,7 @@ motSpeedSqrToThrust = 7.6e-6  # propeller coefficient
 motSpeedSqrToTorque = 1.1e-7  # propeller coefficient
 motInertia   = 15e-6  #inertia of all rotating parts (motor + prop) [kg.m**2]
 
-motTimeConst = 0.015  # time constant with which motor's speed responds [s]
+motTimeConst = 0.06  # time constant with which motor's speed responds [s]
 motMinSpeed  = 0  #[rad/s]
 motMaxSpeed  = 950  #[rad/s]
 TILT_ANGLE = np.deg2rad(15)
@@ -128,7 +128,7 @@ quadrocopter._omega = Vec3(0,0,0)
 # Run the simulation
 #==============================================================================
 
-numSteps = np.int((endTime)/dt)
+numSteps = int((endTime)/dt)
 index = 0
 
 t = 0
@@ -149,27 +149,27 @@ while index < numSteps:
         
         
     ########################################## Original version  ##########################################################
-    # #mass-normalised thrust:
-    # thrustNormDes = accDes + Vec3(0, 0, 9.81)
-    # angAccDes = attController.get_angular_acceleration(thrustNormDes, quadrocopter._att, quadrocopter._omega)
-    # motCmds = mixer.get_motor_force_cmd(thrustNormDes, angAccDes)
-    
-    # #run the simulator
-    # quadrocopter.run(dt, motCmds)
-    ########################################## RL Control ##########################################################
     #mass-normalised thrust:
     thrustNormDes = accDes + Vec3(0, 0, 9.81)
-    #desired ang velocity 
-    angVelDes = attController.get_angular_velocity(thrustNormDes, quadrocopter._att, quadrocopter._omega)
-    cur_state.att = quadrocopter._att.to_array().flatten()
-    cur_state.omega = quadrocopter._omega.to_array().flatten()
-    cur_state.proper_acc = quadrocopter._accel.to_array().flatten()
-    cur_state.cmd_collective_thrust = thrustNormDes.z 
-    cur_state.cmd_bodyrates = angVelDes.to_array().flatten()
+    angAccDes = attController.get_angular_acceleration(thrustNormDes, quadrocopter._att, quadrocopter._omega)
+    motCmds = mixer.get_motor_force_cmd(thrustNormDes, angAccDes)
     
-    motCmds = low_level_controller.run(cur_state)
-    #run the simulator 
-    quadrocopter.run(dt, motCmds,spdCmd=True)
+    #run the simulator
+    quadrocopter.run(dt, motCmds)
+    ########################################## RL Control ##########################################################
+    # #mass-normalised thrust:
+    # thrustNormDes = accDes + Vec3(0, 0, 9.81)
+    # #desired ang velocity 
+    # angVelDes = attController.get_angular_velocity(thrustNormDes, quadrocopter._att, quadrocopter._omega)
+    # cur_state.att = quadrocopter._att.to_array().flatten()
+    # cur_state.omega = quadrocopter._omega.to_array().flatten()
+    # cur_state.proper_acc = quadrocopter._accel.to_array().flatten()
+    # cur_state.cmd_collective_thrust = thrustNormDes.z 
+    # cur_state.cmd_bodyrates = angVelDes.to_array().flatten()
+    
+    # motCmds = low_level_controller.run(cur_state)
+    # #run the simulator 
+    # quadrocopter.run(dt, motCmds,spdCmd=True)
     ########################################## RL Control ##########################################################
 
     #for plotting

@@ -203,7 +203,7 @@ class Disk:
         # Calculate the x and y coordinates for the points on the disk
         x = self.r * np.cos(angles)
         y = self.r * np.sin(angles)
-        z = np.full_like(x, self.h,dtype=np.float)
+        z = np.full_like(x, self.h,dtype=float)
 
         # Create the vertices for the disk by repeating x and y coordinates
         vertices = np.column_stack((x, y, z))
@@ -234,7 +234,7 @@ class Disk:
         # Calculate the x and y coordinates for the points on the disk
         x = self.r * np.cos(angles)
         y = self.r * np.sin(angles)
-        z = np.full_like(x, self.h,dtype=np.float)
+        z = np.full_like(x, self.h,dtype=float)
 
         # Create the vertices for the disk by repeating x and y coordinates
         vertices = np.column_stack((x, y, z))

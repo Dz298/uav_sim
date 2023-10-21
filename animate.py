@@ -11,10 +11,10 @@ import pandas as pd
 
 
 def animate_quadcopter_history(times, x, R,arm_length=0.3,tilt_angle=0.0):
-    plt.style.use('seaborn')
+    plt.style.use('ggplot')
 
     fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    ax = fig.add_subplot(111, projection='3d')
 
     space_lim = (0, 2)
     uav_plot = Uav(ax, arm_length,tilt_angle=tilt_angle) # TODO: change hardcode
